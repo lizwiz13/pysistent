@@ -1,4 +1,4 @@
-***Lazy persistent data structures in Python***
+# Lazy persistent data structures in Python
 
 Persistent data structures are data structures, that can track their version history, thus allowing the user to return to a previous version of the structure.
 The simplest example of a persistent data structure is a stack implemented as a linked-list: each version of the stack corresponds to a specific root node, so
