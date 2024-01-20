@@ -4,8 +4,6 @@ from dataclasses import dataclass
 
 _T = TypeVar('_T')
 
-NIL = const(None)
-
 @dataclass
 class Stream(Generic[_T], metaclass=Lazy):
     head: _T
@@ -17,6 +15,7 @@ class Stream(Generic[_T], metaclass=Lazy):
 
 LazyStream: TypeAlias = Thunk[Optional[Stream[_T]]]
 
+NIL: LazyStream = const(None)
 
 def lazyprint(x: LazyStream) -> None:
     print('[', end='')
@@ -41,14 +40,19 @@ def _streamstr(x: Optional[Stream]) -> str:
 
 
 @lazy
-def _stream_range(start, end, step):
-    if start == end: return Stream(start, NIL)
-    if step == 0: raise ValueError('step must be non zero')
-    if (step < 1 and start < end) or (step > 1 and start > end): return NIL
-    return Stream(start, _stream_range(start+step, end, step))
-
-
 def srange(start, end=None, step=1):
-    if end is None:
-        return _stream_range(0, start, step)
-    return _stream_range(start, end, step)
+    if end is not None:
+        if start == end: return Stream(start, NIL)
+        if step == 0: raise ValueError('step must be non zero')
+        if (step < 1 and start < end) or (step > 1 and start > end): return NIL
+    return Stream(start, srange(start+step, end, step))
+
+
+@lazy
+def take(n: int, xs: LazyStream[_T]) -> LazyStream[_T]:
+    if n <= 0: return NIL
+    match xs():
+        case None:
+            return NIL
+        case Stream(h, t):
+            return Stream(h, take(n-1, t))
